@@ -1,0 +1,12 @@
+.streamlit/secrets.toml
+.env
+.env.*
+*.json
+!firebase.json
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.tmp
+.DS_Store
