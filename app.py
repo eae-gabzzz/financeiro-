@@ -1,10 +1,15 @@
 """Nexo Financeiro — streamlit run app.py"""
+
 from pathlib import Path
 
 import streamlit as st
 
-st.set_page_config(page_title="Nexo Financeiro", page_icon="💚", layout="wide",
-                   initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Nexo Financeiro",
+    page_icon="💚",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 from database.firebase import FirebaseConfigError, get_db  # noqa: E402
 from services.auth import authenticate  # noqa: E402
@@ -14,23 +19,47 @@ from views.transaction_form import render_form  # noqa: E402
 
 
 def load_css() -> None:
-    css = (Path(__file__).parent / "styles" / "main.css").read_text(encoding="utf-8")
-    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    css = (
+        Path(__file__).parent / "styles" / "main.css"
+    ).read_text(encoding="utf-8")
+
+    st.markdown(
+        f"<style>{css}</style>",
+        unsafe_allow_html=True
+    )
 
 
 def main() -> None:
     load_css()
+
     try:
         get_db()
     except FirebaseConfigError as exc:
         st.error(f"Firebase não configurado: {exc}")
-        st.info("Siga o passo a passo do README.md (seção de configuração do Firebase) e reinicie o app.")
+        st.info(
+            "Siga o passo a passo do README.md "
+            "(seção de configuração do Firebase) e reinicie o app."
+        )
         st.stop()
 
-    user = authenticate(st.session_state)  # identidade verificada no servidor
+    user = authenticate(st.session_state)
+
     if user is None:
         render_auth()
         return
+
+    # Tela de inserção do código de verificação
+    if not st.session_state.get("email_verified", True):
+        code = st.text_input(
+            "Código de verificação",
+            placeholder="Digite o código recebido"
+        )
+
+        if st.button("Verificar código"):
+            # A validação real deve ser feita pelo serviço de autenticação.
+            st.warning("A validação do código precisa ser conectada ao Firebase.")
+        return
+
     if st.session_state.get("view") == "form":
         render_form(user)
     else:
