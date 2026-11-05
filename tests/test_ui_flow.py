@@ -57,3 +57,51 @@ def test_fluxo_completo_receita_e_despesa(monkeypatch):
         assert esperado in _html(at) and desc in _html(at)
     assert len(fake.store["transactions"]) == 2
     assert all(t["user_id"] == "u1" for t in fake.store["transactions"].values())
+
+
+def test_navegacao_lateral_e_graficos_de_analise(monkeypatch):
+    from datetime import date
+
+    today = date.today().isoformat()
+    fake = FakeFirestore({
+        "transactions": {
+            "salary": {"user_id": "u1", "type": "income", "description": "Salário",
+                       "amount_cents": 250000, "category": "Salário", "date": today},
+            "groceries": {"user_id": "u1", "type": "expense", "description": "Mercado",
+                          "amount_cents": 35000, "category": "Alimentação", "date": today},
+        },
+    })
+    monkeypatch.setattr("database.firebase.get_db", lambda: fake)
+    monkeypatch.setattr("services.auth._verify_id_token", lambda t: {"uid": "u1"})
+    at = AppTest.from_file(str(APP), default_timeout=30)
+    at.session_state["auth"] = {"uid": "u1", "email": "a@a.com", "name": "Ana Souza",
+                                "id_token": "x", "refresh_token": "y"}
+    at.run()
+
+    assert not at.exception
+    assert "Mercado" in _html(at)
+    assert len(at.get("plotly_chart")) == 2
+
+    at.radio(key="dashboard_page").set_value("Análises").run()
+    assert not at.exception
+    assert "Despesas por categoria" in " ".join(heading.value for heading in at.subheader)
+    assert len(at.get("plotly_chart")) == 2
+    assert "Período dos gráficos" in " ".join(element.label for element in at.selectbox)
+
+    at.radio(key="dashboard_page").set_value("Planejamento").run()
+    assert not at.exception
+    assert "Orçamentos mensais por categoria" in " ".join(heading.value for heading in at.subheader)
+    assert "Metas de economia" in " ".join(heading.value for heading in at.subheader)
+
+    at.selectbox(key="budget_category").set_value("Alimentação")
+    at.number_input(key="budget_amount").set_value(500.0)
+    at.get("form_submit_button")[0].click().run()
+    assert not at.exception
+    assert len(fake.store["financial_plans"]) == 1
+
+    at.text_input[0].set_value("Viagem")
+    at.number_input(key="goal_target").set_value(3000.0)
+    at.get("form_submit_button")[1].click().run()
+    assert not at.exception
+    assert len(fake.store["financial_plans"]) == 2
+    assert any(plan.get("name") == "Viagem" for plan in fake.store["financial_plans"].values())

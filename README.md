@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💜 Finance Flow
+# 💚 Nexo Financeiro
 
 **App de controle financeiro pessoal com contas de usuário, dados isolados por conta e interface estilo fintech.**
 Python · Streamlit · Firebase Authentication · Cloud Firestore
@@ -8,12 +8,12 @@ Python · Streamlit · Firebase Authentication · Cloud Firestore
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.42+-FF4B4B?logo=streamlit&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?logo=firebase&logoColor=black)
-![Tests](https://img.shields.io/badge/tests-46%20passing-22C55E)
+![Tests](https://img.shields.io/badge/tests-59%20passing-22C55E)
 ![Pytest](https://img.shields.io/badge/pytest-ok-0A9EDC?logo=pytest&logoColor=white)
 
 [Demo ao vivo](LINK_DO_APP) · [Reportar bug](../../issues) · [Sugerir melhoria](../../issues)
 
-<!-- Troque pelo seu print/GIF: ![Finance Flow](docs/screenshot.png) -->
+<!-- Troque pelo seu print/GIF: ![Nexo Financeiro](docs/screenshot.png) -->
 
 </div>
 
@@ -39,13 +39,16 @@ Python · Streamlit · Firebase Authentication · Cloud Firestore
 
 ## Visão geral
 
-O Finance Flow permite que cada pessoa crie sua conta, registre receitas e despesas e acompanhe **Receita, Despesas e Saldo** em tempo real. O projeto foi pensado para ir além de uma demonstração visual: autenticação real, persistência real, isolamento entre usuários verificado no servidor e uma suíte de testes automatizados.
+O Nexo Financeiro permite que cada pessoa crie sua conta, registre receitas e despesas e acompanhe **Receita, Despesas e Saldo** em tempo real. O projeto foi pensado para ir além de uma demonstração visual: autenticação real, persistência real, isolamento entre usuários verificado no servidor e uma suíte de testes automatizados.
 
-A tela principal segue três regiões fixas:
+A tela principal oferece três áreas pela barra lateral:
 
-1. **Topo:** três indicadores (Receita, Despesas, Saldo), sempre calculados sobre **todos** os dados do usuário, nunca sobre o resultado dos filtros.
-2. **Centro:** listagem de movimentações (da mais recente para a mais antiga) com busca, filtros e abas para o gráfico.
-3. **Base:** botão de ação flutuante circular **+**, centralizado, que abre o cadastro de movimentação.
+1. **Visão geral:** indicadores globais, resumo exportável do mês, gráfico de evolução, gráfico de pizza e lançamentos recentes.
+2. **Movimentações:** histórico com busca, filtros, edição, exclusão e exportação CSV.
+3. **Análises:** comparação mensal, distribuição de despesas por categoria e seleção de período.
+4. **Planejamento:** orçamentos mensais por categoria e metas de economia com progresso atualizado.
+
+O botão de ação **+** continua disponível para cadastrar uma movimentação rapidamente.
 
 ## Funcionalidades
 
@@ -58,12 +61,17 @@ A tela principal segue três regiões fixas:
 - Criar, editar e excluir (com confirmação) receitas e despesas.
 - Categorias por tipo, com opção de categoria personalizada.
 - Busca por descrição; filtros por tipo, categoria e período.
-- Gráfico mensal de receitas × despesas (Plotly).
+- Gráficos mensais de receitas × despesas e distribuição de despesas por categoria (Plotly).
+- Filtro de período para analisar os últimos 3, 6 ou 12 meses ou todo o histórico.
+- Orçamentos mensais por categoria, com acompanhamento do valor gasto e alerta quando o limite é ultrapassado.
+- Metas de economia com atualização do valor guardado e barra de progresso.
+- Resumo mensal exportável em CSV com receitas, despesas, saldo e gastos por categoria.
+- Indicadores do mês atual, comparação de despesas com o mês anterior e lista de lançamentos recentes.
 - Exportação para CSV (compatível com Excel BR e protegida contra *CSV injection*).
 - Estado vazio amigável e paginação incremental da lista.
 
 **Interface**
-- Tema escuro próprio (paleta roxa/verde/coral), responsivo: os indicadores se reorganizam em telas pequenas.
+- Tema escuro próprio em tons de verde, com navegação lateral entre visão geral, movimentações e análises; responsivo em telas pequenas.
 - Botão **+** é um `st.button` real estilizado por CSS, sem JavaScript falso nem HTML que "parece" botão.
 
 ## Arquitetura
@@ -72,8 +80,10 @@ A tela principal segue três regiões fixas:
 flowchart TD
     UI["app.py + views/ + components/<br/>(Streamlit)"] --> SVC_A["services/auth.py<br/>(Firebase Auth REST + Admin SDK)"]
     UI --> SVC_T["services/transactions.py<br/>(regras de negócio)"]
+    UI --> SVC_P["services/planning.py<br/>(orçamentos e metas)"]
     SVC_A --> FB["database/firebase.py<br/>(único ponto de credenciais)"]
     SVC_T --> FB
+    SVC_P --> FB
     FB --> FS[("Cloud Firestore")]
     SVC_A --> IDP["Firebase Authentication"]
 ```
@@ -85,11 +95,12 @@ finance-flow/
 ├── services/
 │   ├── auth.py                # cadastro, login, reset, sessão e validação de token
 │   ├── transactions.py        # CRUD, filtros e totais (checa o dono em toda operação)
-│   └── export.py              # CSV
+│   ├── planning.py            # orçamentos e metas (checa o dono em toda operação)
+│   └── export.py              # exportação CSV
 ├── components/                # cards, lista de transações, botão +
 ├── views/                     # telas: auth, dashboard, formulário
 ├── utils/                     # formatação monetária e ícones
-├── styles/main.css            # tema Finance Flow
+├── styles/main.css            # tema Nexo Financeiro
 ├── tests/                     # pytest com Firebase simulado em memória
 ├── firestore.rules            # bloqueia acesso direto de clientes
 └── .streamlit/                # config.toml e secrets.toml.example
@@ -145,18 +156,29 @@ A separação é intencional: **interface não fala com o banco**. Telas chamam 
 | `notes` | string | Observações opcionais |
 | `created_at` / `updated_at` | timestamp | Timestamps do servidor (`updated_at` só após edição) |
 
+**`financial_plans/{id}`**
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `user_id` | string | UID do dono, validado pelo servidor |
+| `kind` | `"budget"` \| `"goal"` | Tipo do planejamento |
+| `category` / `amount_cents` | string / int | Categoria e limite mensal de um orçamento |
+| `name` / `target_cents` / `saved_cents` | string / int / int | Nome, objetivo e valor guardado de uma meta |
+| `created_at` / `updated_at` | timestamp | Timestamps do servidor |
+
 ## Testes
 
 ```bash
 pytest
 ```
 
-**46 testes**, todos rodando contra um **Firestore e um Firebase Auth simulados em memória**: nenhum dado ou conta real é tocado. Eles cobrem:
+Testes rodando contra um **Firestore e um Firebase Auth simulados em memória**: nenhum dado ou conta real é tocado. Eles cobrem:
 
 | Área | O que é validado |
 |---|---|
 | Cálculos | Formatação em R$, conversão sem erro de float, receita/despesa/saldo (ex.: 2.000 − 350 = 1.650), ordenação |
 | Persistência | Cadastro de receita e despesa, dados presentes após "reiniciar a conexão", edição e exclusão |
+| Planejamento | Orçamentos por categoria e metas de economia, validação, persistência e isolamento entre usuários |
 | Validação | Valores zero/negativos/não inteiros, descrição vazia, tipo e data inválidos |
 | Idempotência | Salvar duas vezes com o mesmo formulário não duplica |
 | Filtros | Filtrar não altera os totais globais |

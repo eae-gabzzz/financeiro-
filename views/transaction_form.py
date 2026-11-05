@@ -76,7 +76,7 @@ def render_form(user) -> None:
     if "form_id" not in state:
         open_form(state)
     editing = bool(state.get("form_editing"))
-    st.markdown(f'<div class="ff-brand"><span class="ff-logo">◆</span> Finance Flow</div>'
+    st.markdown(f'<div class="ff-brand"><span class="ff-logo">◆</span> Nexo Financeiro</div>'
                 f'<h2 class="ff-title">{"Editar movimentação" if editing else "Nova movimentação"}</h2>',
                 unsafe_allow_html=True)
     with st.container(key="form_card"):

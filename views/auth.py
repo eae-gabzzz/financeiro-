@@ -63,7 +63,7 @@ def render_auth() -> None:
     mode = st.session_state.setdefault("auth_mode", "login")
     _, col, _ = st.columns([1, 1.4, 1])
     with col:
-        st.markdown('<div class="ff-brand ff-brand-lg"><span class="ff-logo">◆</span> Finance Flow</div>',
+        st.markdown('<div class="ff-brand ff-brand-lg"><span class="ff-logo">◆</span> Nexo Financeiro</div>',
                     unsafe_allow_html=True)
         with st.container(key="auth_card"):
             {"login": _login, "signup": _signup, "reset": _reset}.get(mode, _login)()

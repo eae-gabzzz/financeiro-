@@ -1,10 +1,10 @@
-"""Finance Flow — streamlit run app.py"""
+"""Nexo Financeiro — streamlit run app.py"""
 from pathlib import Path
 
 import streamlit as st
 
-st.set_page_config(page_title="Finance Flow", page_icon="💜", layout="wide",
-                   initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Nexo Financeiro", page_icon="💚", layout="wide",
+                   initial_sidebar_state="expanded")
 
 from database.firebase import FirebaseConfigError, get_db  # noqa: E402
 from services.auth import authenticate  # noqa: E402
