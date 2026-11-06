@@ -71,7 +71,7 @@ O botão de ação **+** continua disponível para cadastrar uma movimentação 
 - Estado vazio amigável e paginação incremental da lista.
 
 **Interface**
-- Tema escuro próprio em tons de verde, com navegação lateral entre visão geral, movimentações e análises; responsivo em telas pequenas.
+- Interface em preto e azul, com navegação lateral espaçada e perfil do usuário; responsivo em telas pequenas.
 - Botão **+** é um `st.button` real estilizado por CSS, sem JavaScript falso nem HTML que "parece" botão.
 
 ## Arquitetura

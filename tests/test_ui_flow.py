@@ -105,3 +105,16 @@ def test_navegacao_lateral_e_graficos_de_analise(monkeypatch):
     assert not at.exception
     assert len(fake.store["financial_plans"]) == 2
     assert any(plan.get("name") == "Viagem" for plan in fake.store["financial_plans"].values())
+
+
+def test_barra_lateral_nao_exibe_botao_de_ia(monkeypatch):
+    monkeypatch.setattr("database.firebase.get_db", lambda: FakeFirestore())
+    monkeypatch.setattr("services.auth._verify_id_token", lambda t: {"uid": "u1"})
+    at = AppTest.from_file(str(APP), default_timeout=30)
+    at.session_state["auth"] = {"uid": "u1", "email": "a@a.com", "name": "Ana Souza",
+                                "id_token": "x", "refresh_token": "y"}
+    at.run()
+
+    assert not at.exception
+    assert "sidebar_ai" not in [button.key for button in at.button]
+    assert all("IA local" not in button.label for button in at.button)

@@ -62,9 +62,9 @@ def _chart_layout(fig, *, legend=True) -> None:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=0, r=0, t=16, b=0),
-        font=dict(color="#dce8df"),
+        font=dict(color="#bfdbfe"),
         xaxis=dict(showgrid=False, zeroline=False),
-        yaxis=dict(gridcolor="rgba(148, 163, 184, .12)", tickprefix="R$ "),
+        yaxis=dict(gridcolor="rgba(96, 165, 250, .16)", tickprefix="R$ "),
         showlegend=legend,
         legend_title_text="",
     )
@@ -77,7 +77,7 @@ def _render_monthly_chart(items) -> None:
     df = _transaction_frame(items)
     grouped = df.groupby(["Mês", "Tipo"], as_index=False)["Valor"].sum()
     fig = px.bar(grouped, x="Mês", y="Valor", color="Tipo", barmode="group",
-                 color_discrete_map={"Receita": "#34d399", "Despesa": "#fb7185"})
+                 color_discrete_map={"Receita": "#60a5fa", "Despesa": "#cbd5e1"})
     _chart_layout(fig)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -91,8 +91,8 @@ def _render_expense_chart(items) -> None:
     df["Valor"] = df["amount_cents"] / 100
     grouped = df.groupby("category", as_index=False)["Valor"].sum().sort_values("Valor", ascending=False)
     fig = px.pie(grouped, names="category", values="Valor", hole=.68,
-                 color_discrete_sequence=["#22c55e", "#86efac", "#16a34a", "#a3e635",
-                                          "#4ade80", "#15803d", "#bef264", "#34d399"])
+                 color_discrete_sequence=["#3b82f6", "#93c5fd", "#1d4ed8", "#bfdbfe",
+                                          "#60a5fa", "#64748b", "#dbeafe", "#2563eb"])
     fig.update_traces(textposition="inside", textinfo="percent")
     _chart_layout(fig, legend=False)
     st.plotly_chart(fig, use_container_width=True)
@@ -306,15 +306,18 @@ def _filters(items) -> list[dict]:
 def render_dashboard(user) -> None:
     state = st.session_state
     with st.sidebar:
-        st.markdown('<div class="ff-brand ff-sidebar-brand"><span class="ff-logo">◆</span> Nexo Financeiro</div>',
-                    unsafe_allow_html=True)
-        st.caption("Seu dinheiro, em equilíbrio.")
-        st.markdown("---")
-        page = st.radio("Navegação", NAVIGATION, key="dashboard_page", label_visibility="collapsed")
-        st.markdown("---")
-        st.caption("SEU PERFIL")
-        st.markdown(f"**{escape(user.name)}**")
-        st.caption(user.email)
+        initials = "".join(part[0] for part in user.name.split()[:2]).upper()
+        st.markdown(
+            '<div class="ff-sidebar-profile">'
+            f'<span class="ff-avatar">{escape(initials)}</span>'
+            f'<span class="ff-profile-info"><strong>{escape(user.name)}</strong>'
+            f'<small>{escape(user.email)}</small></span></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="ff-sidebar-section-label">NAVEGAÇÃO</div>', unsafe_allow_html=True)
+        page = st.radio(
+            "Navegação", NAVIGATION, key="dashboard_page", label_visibility="collapsed",
+        )
         st.button("＋  Nova movimentação", key="sidebar_add", type="primary", use_container_width=True,
                   on_click=lambda: open_form(st.session_state))
         st.button("Sair da conta", key="logout_btn", use_container_width=True,

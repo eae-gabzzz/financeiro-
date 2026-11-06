@@ -6,7 +6,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Nexo Financeiro",
-    page_icon="💚",
+    page_icon="🔷",
     layout="wide",
     initial_sidebar_state="expanded"
 )
