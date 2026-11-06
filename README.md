@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💚 Nexo Financeiro
+#  Nexo Financeiro
 
 **App de controle financeiro pessoal com contas de usuário, dados isolados por conta e interface estilo fintech.**
 Python · Streamlit · Firebase Authentication · Cloud Firestore
@@ -279,7 +279,7 @@ Este projeto foi construído com **IA generativa** (vibe coding) durante o curso
 
 ## Autor
 
-**Enzo** · [LinkedIn](https://www.linkedin.com/in/devbyenzo) · [GitHub](https://github.com/devbyenzo)
+**Gabriel** · [LinkedIn](www.linkedin.com/in/gbzzz) · [GitHub](https://github.com/eae-gabzzz)
 
 ## Licença
 Projeto sob a licença MIT.
